@@ -1,3 +1,6 @@
+library(ggplot2)
+library(reshape2)
+
 # Read input genotype data collected from 1000G Project VCF for rs3173615
 # Edit path to input file to run
 snp_genotype_by_population <- read.delim("~/Downloads/snp_genotype_by_population.sorted.tsv")
@@ -25,3 +28,27 @@ rownames(combined_data) <- c("African", "Non-African")
 
 # Run chisq test on new df
 chisq.test(combined_data)
+
+# Transpose data
+combined_data <- t(combined_data)
+combined_data <- as.data.frame(combined_data)
+
+# Calculate proportions
+sum_african <- sum(combined_data$African)
+sum_non_african <- sum(combined_data$`Non-African`)
+combined_data$African <- combined_data$African / sum_african
+combined_data$`Non-African` <- combined_data$`Non-African` / sum_non_african
+
+# Add genotype column
+combined_data$Genotype <- rownames(combined_data)
+
+combined_data_long <- melt(combined_data, id.vars = 'Genotype', variable.name = 'Population', value.name = 'Proportion')
+
+proportion_plot <- ggplot(combined_data_long, aes(x = Population, y = Proportion, fill = Genotype)) + 
+	geom_bar(stat = 'identity', position = 'dodge') + 
+	scale_fill_manual(values = c("0_0" = "#56B4E9", "0_1" = "#E69F00", "1_1" = "#009E73"), 
+	labels = c("0/0", "0/1", "1/1")) + ylab('Proportion') + xlab('Population') + 
+	ggtitle('Proportions of rs3173615 Genotypes in African and Non-African Populations') + 
+	theme_minimal()
+	
+ggsave("~/Downloads/african_population_proportions.png", plot = proportion_plot, width = 6, height = 4, dpi = 300)
