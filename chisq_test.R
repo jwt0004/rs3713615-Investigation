@@ -4,6 +4,13 @@ library(reshape2)
 # Read input genotype data collected from 1000G Project VCF for rs3173615
 # Edit path to input file to run
 snp_genotype_by_population <- read.delim("~/Downloads/snp_genotype_by_population.sorted.tsv")
+snp_genotype_by_gender <- read.delim("~/Downloads/snp_genotype_by_gender.sorted.tsv")
+
+# table for gender chisq test
+gender_table <- xtabs(Freq ~ Gender + rs3173615.Genotype, data = snp_genotype_by_gender)
+
+# chisq test for genotypes by geneder
+chisq.test(gender_table)
 
 # reshape the data for processing
 data <- reshape(snp_genotype_by_population, 
